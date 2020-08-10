@@ -30,7 +30,12 @@ module.exports = {
     plugins: [
         new CleanWebpackPlugin({ cleanStaleWebpackAssets: false }),
         new HtmlWebpackPlugin({
-            title: 'Output Management',
+            filename: 'index.html',
+            title: 'Morphogenesis in three dimensions',
+            meta: {
+                viewport: 'width=device-width, initial-scale=1, shrink-to-fit=no',
+                lang: 'en'
+            }
         }),
     ]
 };
