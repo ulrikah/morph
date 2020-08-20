@@ -1,4 +1,4 @@
 import './style.css'
-import main from './hello'
+import main from './dla'
 
 main()
