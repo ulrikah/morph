@@ -3,7 +3,7 @@ import {
   Scene,
   PerspectiveCamera,
   DirectionalLight,
-  Color
+  Vector3
 } from 'three'
 import createCanvas from './utils/createCanvas'
 import Walker from './dla/Walker';
@@ -29,9 +29,12 @@ const main = () => {
 
   scene.add(light)
 
+  const speed = 0.04;
+  const minDistThreshold = 3;
+  const branch: Walker[] = [new Walker(speed, new Vector3(0, 0, 0))]
   const walkers : Walker[] = []
-  for (let i = 0; i < 500; i++) {
-    walkers.push(new Walker(0.02))
+  for (let i = 0; i < 3000; i++) {
+    walkers.push(new Walker(speed))
   }
   walkers.map(walker => scene.add(walker.body))
 
@@ -40,17 +43,21 @@ const main = () => {
     renderer.render(scene, camera)
     requestAnimationFrame(render)
 
-    walkers.map((walker, index) => {
-      walker.walk()
-      walkers
-        .filter((_walker) => _walker !== walker)
-        .forEach(targetWalker => {
-          if (walker.collision(targetWalker)) {
-            console.log("Collided")
-            walker.body.material.color = new Color(0x22eeff)
-          }
-        })
-    })
+    walkers
+      .filter(walker => walker.active)
+      .map((walker) => {
+        walker.walk()
+        if (walker.minDistToBranch < minDistThreshold) {
+          branch
+            .forEach(targetWalker => {
+              if (walker.collision(targetWalker)) {
+                branch.push(walker.setInactive());
+              }
+            })
+        } else {
+          walker.minDistToBranch -= walker.speed; // to support the case where a walker has moved towards the branch
+        }
+      })
   }
   requestAnimationFrame(render)
 }
