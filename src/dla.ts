@@ -2,31 +2,25 @@ import {
   WebGLRenderer,
   Scene,
   PerspectiveCamera,
-  Mesh,
-  SphereGeometry,
   DirectionalLight,
-  MeshPhongMaterial
+  Color
 } from 'three'
 import createCanvas from './utils/createCanvas'
+import Walker from './dla/Walker';
 
 const main = () => {
-  const canvas = createCanvas(window.innerWidth / 2, window.innerHeight / 2)
+  const canvas = createCanvas(window.innerWidth, window.innerHeight)
 
   const renderer = new WebGLRenderer({ canvas })
 
   const fov = 75
   const aspect = 2 // the canvas default
   const near = 0.1
-  const far = 5
-  const camera = new PerspectiveCamera(fov, aspect, near, far)
-  camera.position.z = 2
+  const camera = new PerspectiveCamera(fov, aspect, near)
+  camera.position.z = 8
+  camera.position.y = 0
 
   const scene = new Scene()
-
-  const sphere = createSphere()
-  sphere.position.x = 0
-  sphere.position.y = 0
-  sphere.position.z = 0
 
   const color = 0xFFFFFF
   const intensity = 1
@@ -34,26 +28,31 @@ const main = () => {
   light.position.set(-1, 2, 4)
 
   scene.add(light)
-  scene.add(sphere)
+
+  const walkers : Walker[] = []
+  for (let i = 0; i < 500; i++) {
+    walkers.push(new Walker(0.02))
+  }
+  walkers.map(walker => scene.add(walker.body))
 
   const render = (time : number) => {
     time *= 0.001 // convert time to seconds
     renderer.render(scene, camera)
     requestAnimationFrame(render)
 
-    const rotation = time * 0.1
-    sphere.rotation.x = rotation
-    sphere.rotation.y = rotation
-    sphere.position.x = Math.sin(time) // Math.random() > .5 ? time * 0.01 : -1 * time * 0.01
+    walkers.map((walker, index) => {
+      walker.walk()
+      walkers
+        .filter((_walker) => _walker !== walker)
+        .forEach(targetWalker => {
+          if (walker.collision(targetWalker)) {
+            console.log("Collided")
+            walker.body.material.color = new Color(0x22eeff)
+          }
+        })
+    })
   }
   requestAnimationFrame(render)
-}
-
-const createSphere = () => {
-  var geometry = new SphereGeometry(0.5, 32, 32)
-  var material = new MeshPhongMaterial({ color: 0xff00ee })
-  var sphere = new Mesh(geometry, material)
-  return sphere
 }
 
 export default main

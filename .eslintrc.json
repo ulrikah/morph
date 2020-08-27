@@ -15,5 +15,7 @@
         "@typescript-eslint"
     ],
     "rules": {
+        "semi" : 0,
+        "quotes" : 0
     }
 }
