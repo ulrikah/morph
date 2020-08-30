@@ -37,13 +37,15 @@ const main = () => {
   }
   walkers.map(walker => scene.add(walker.body))
 
+  let doRender = true;
   const render = (time : number) => {
     const delta = clock.getDelta();
     cameraControls.update(delta);
 
-    time *= 0.001 // convert time to seconds
     renderer.render(scene, camera)
     requestAnimationFrame(render)
+    if (!doRender) { return }
+
     walkers
       .filter(walker => walker.active)
       .map((walker) => {
@@ -60,6 +62,14 @@ const main = () => {
         }
       })
   }
+  const pauseOnSpaceDown = () => {
+    document.addEventListener('keydown', (event: KeyboardEvent) => {
+      if ([" ", "Spacebar"].includes(event.key)) {
+        doRender = !doRender;
+      }
+    })
+  }
+  pauseOnSpaceDown()
   requestAnimationFrame(render)
 }
 
