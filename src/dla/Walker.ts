@@ -1,16 +1,28 @@
 // eslint-disable-next-line no-unused-vars
-import { Vector3, Mesh, SphereGeometry, MeshPhongMaterial } from "three";
+import {
+    Vector3,
+    Mesh,
+    SphereGeometry,
+    MeshPhongMaterial,
+    LineBasicMaterial,
+    Material,
+    MeshToonMaterial,
+    PointsMaterial,
+    MeshBasicMaterial,
+    LineDashedMaterial,
+    MeshPhysicalMaterial,
+} from "three";
 import { random } from "../utils/random";
 
 const walkerRadius = 0.1;
 const walkerGeometry = new SphereGeometry(walkerRadius, 32, 32);
-const walkerActiveMaterial = new MeshPhongMaterial({ color: 0xff22ee });
-const walkerInactiveMaterial = new MeshPhongMaterial({ color: 0x22eeff });
+const walkerActiveMaterial = new MeshToonMaterial({ color: 0xce214a });
+const walkerInactiveMaterial = new MeshToonMaterial({ color: 0x2194ce });
 
 class Walker {
     position: Vector3;
     speed: number;
-    body: Mesh<SphereGeometry, MeshPhongMaterial>;
+    body: Mesh<SphereGeometry, Material>;
     active: boolean;
     minDistToBranch: number;
     constructor(

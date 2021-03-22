@@ -6,5 +6,5 @@ My entry to this topic was through [@jasonwebb's compilation of resources](https
 
 THREE.js is used for rendering.
 
-The gif below is a demonstration of an implementation diffusion-limited aggregation in 3D.
-![Diffusion-limited aggregation](assets/demo.gif "Diffusion-limited-aggregation")
+The gif below is a screenshot from a render of the implementation of diffusion-limited aggregation in 3D.
+![Diffusion-limited aggregation](assets/dla.png "Diffusion-limited-aggregation")
