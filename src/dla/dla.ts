@@ -1,8 +1,8 @@
 import * as THREE from "three";
-import createCanvas from "./utils/createCanvas";
-import Walker from "./dla/Walker";
+import createCanvas from "../utils/createCanvas";
+import Walker from "./Walker";
 import CameraControls from "camera-controls";
-import { Color, MeshPhongMaterial, SphereGeometry } from "three";
+import { Color } from "three";
 
 CameraControls.install({ THREE: THREE });
 

@@ -1,4 +1,4 @@
-import './style.css'
-import main from './dla'
+import "./style.css";
+import main from "./dla/dla";
 
-main()
+main();
