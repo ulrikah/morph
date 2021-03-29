@@ -50,6 +50,15 @@ class Node {
             }
         });
     };
+
+    align = (neighbors: Node[], force: number) => {
+        if (neighbors.length == 2) {
+            const a = neighbors[0].body.position.clone();
+            const b = neighbors[1].body.position.clone();
+            const midPoint = a.add(b).divideScalar(2);
+            this.body.position.lerp(midPoint, force);
+        }
+    };
 }
 
 class Chain {
@@ -59,7 +68,7 @@ class Chain {
     material: THREE.Material;
     force: number;
     nodeRadius: number;
-    constructor(nNodes = 10) {
+    constructor(nNodes: number) {
         this.nodes = [];
         this.worldScale = 0.5;
         this.force = 0.01;
@@ -68,9 +77,9 @@ class Chain {
         this.geometry = new THREE.SphereBufferGeometry(this.nodeRadius, 32, 32);
         this.material = new THREE.MeshToonMaterial({ color: 0xce214a });
         for (let i = 0; i < nNodes; i++) {
-            const x = 0;
-            const z = 0;
-            const y = random(i, i + 1) * this.worldScale;
+            const x = random(-10, 10);
+            const z = random(-10, 10);
+            const y = random(-10, 10);
             const position = new THREE.Vector3(x, y, z);
             this.nodes.push(new Node(position, this.geometry, this.material));
         }
@@ -97,12 +106,11 @@ class Chain {
             const neighbors = this.getNeighbors(i);
             node.attract(neighbors, this.force);
             node.repulse(neighbors, this.nodeRadius * 3, this.force);
-            // node.align(neighbors, this.force);
+            node.align(neighbors, this.force);
         });
 
-        // repulsion
-        // alignment
-        // add new nodes if
+        // TODO:
+        // add new nodes if distance between two neighbors is too large
         // insert new nodes in the chain to over-constrain the system and induce growth
     };
 }
@@ -131,7 +139,7 @@ const differentialGrowth = () => {
 
     scene.add(light);
 
-    const chain: Chain = new Chain(10);
+    const chain: Chain = new Chain(1000);
     scene.add(...chain.nodes.map((node) => node.body));
 
     let doRender = true;
