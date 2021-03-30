@@ -81,9 +81,17 @@ class Chain {
             const z = random(-10, 10);
             const y = random(-10, 10);
             const position = new THREE.Vector3(x, y, z);
-            this.nodes.push(new Node(position, this.geometry, this.material));
+            this.nodes.push(this.createNode(position));
         }
     }
+
+    createNode = (
+        position: THREE.Vector3,
+        geometry = this.geometry,
+        material = this.material
+    ) => {
+        return new Node(position, geometry, material);
+    };
 
     getNeighbors = (index: number): Node[] => {
         let neighbors: Node[];
@@ -97,21 +105,42 @@ class Chain {
         return neighbors;
     };
 
+    adaptiveSubdivision = (threshold: number) => {
+        const newNodes: Node[] = [];
+        this.nodes.forEach((node, i) => {
+            const neighbors = this.getNeighbors(i);
+            neighbors.forEach((neighborNode) => {
+                const distance = node.body.position.distanceTo(
+                    neighborNode.body.position
+                );
+                if (distance > threshold) {
+                    const a = node.body.position.clone();
+                    const b = neighborNode.body.position.clone();
+                    const midPoint = a.add(b).divideScalar(2);
+                    newNodes.push(this.createNode(midPoint));
+                    // TODO: add newNodes to existing nodeList
+                }
+            });
+        });
+        return newNodes;
+    };
+
     step = () => {
         this.nodes.forEach((node, i) => {
-            // node.body.position.x += random(-this.force, this.force);
-            // node.body.position.y += random(-this.force, this.force) / 10;
-            // node.body.position.z = 0; // 2D for now
-
             const neighbors = this.getNeighbors(i);
             node.attract(neighbors, this.force);
             node.repulse(neighbors, this.nodeRadius * 3, this.force);
             node.align(neighbors, this.force);
         });
+        // add new nodes if distance between two neighbors is too large
+        const newNodes: Node[] = [];
+	// TODO:
+        // newNodes.push(...this.adaptiveSubdivision(10));
 
         // TODO:
-        // add new nodes if distance between two neighbors is too large
         // insert new nodes in the chain to over-constrain the system and induce growth
+
+        return newNodes;
     };
 }
 
@@ -121,8 +150,9 @@ const differentialGrowth = () => {
 
     const fov = 75;
     const aspect = 2;
-    const near = 0.1;
-    const camera = new THREE.PerspectiveCamera(fov, aspect, near);
+    const near = 0.01;
+    const far = 3000;
+    const camera = new THREE.PerspectiveCamera(fov, aspect, near, far);
     camera.position.z = 8;
     camera.position.y = 0;
 
@@ -151,7 +181,11 @@ const differentialGrowth = () => {
         if (!doRender) {
             return;
         }
-        chain.step();
+        const newNodes = chain.step();
+        if (newNodes.length > 0) {
+            console.log("Add ", newNodes.length);
+            scene.add(...newNodes.map((node) => node.body));
+        }
     };
     const pauseOnSpaceDown = () => {
         document.addEventListener("keydown", (event: KeyboardEvent) => {
