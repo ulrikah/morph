@@ -1,6 +1,5 @@
 import CameraControls from "camera-controls";
 import * as THREE from "three";
-import { Vector3 } from "three";
 import createCanvas from "../utils/createCanvas";
 import { random } from "../utils/random";
 
@@ -76,10 +75,12 @@ class Chain {
         // TODO: make the visual part disconnected from the growth algorithm
         this.geometry = new THREE.SphereBufferGeometry(this.nodeRadius, 32, 32);
         this.material = new THREE.MeshToonMaterial({ color: 0xce214a });
+        const scale = 5;
         for (let i = 0; i < nNodes; i++) {
-            const x = random(-10, 10);
+            const deg = i * 180.0 / Math.PI
+            const x = Math.sin(deg) * scale;
             const z = random(-10, 10);
-            const y = random(-10, 10);
+            const y = Math.cos(deg) * scale;
             const position = new THREE.Vector3(x, y, z);
             this.nodes.push(this.createNode(position));
         }
@@ -106,9 +107,13 @@ class Chain {
     };
 
     adaptiveSubdivision = (threshold: number) => {
+        const originalNodes : Node[] = [...this.nodes];
         const newNodes: Node[] = [];
-        this.nodes.forEach((node, i) => {
-            const neighbors = this.getNeighbors(i);
+
+        originalNodes.forEach((node) => {
+            // need to re-index since this.nodes may have increased
+            const idx = this.nodes.indexOf(node);
+            const neighbors = this.getNeighbors(idx);
             neighbors.forEach((neighborNode) => {
                 const distance = node.body.position.distanceTo(
                     neighborNode.body.position
@@ -117,8 +122,9 @@ class Chain {
                     const a = node.body.position.clone();
                     const b = neighborNode.body.position.clone();
                     const midPoint = a.add(b).divideScalar(2);
-                    newNodes.push(this.createNode(midPoint));
-                    // TODO: add newNodes to existing nodeList
+                    const newNode = this.createNode(midPoint) 
+                    newNodes.push(newNode);
+                    this.nodes.splice(idx, 0, newNode)
                 }
             });
         });
@@ -129,16 +135,18 @@ class Chain {
         this.nodes.forEach((node, i) => {
             const neighbors = this.getNeighbors(i);
             node.attract(neighbors, this.force);
-            node.repulse(neighbors, this.nodeRadius * 3, this.force);
+            node.repulse(neighbors, this.nodeRadius * 3, this.force * 30);
             node.align(neighbors, this.force);
         });
         // add new nodes if distance between two neighbors is too large
         const newNodes: Node[] = [];
-	// TODO:
-        // newNodes.push(...this.adaptiveSubdivision(10));
-
+	    
+        // adaptive subdivision 
+        newNodes.push(...this.adaptiveSubdivision(10));
+        
         // TODO:
         // insert new nodes in the chain to over-constrain the system and induce growth
+        // newNodes.push(...this.overConstrain());
 
         return newNodes;
     };
