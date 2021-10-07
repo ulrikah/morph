@@ -6,21 +6,23 @@ import lerp from "../utils/lerp";
 const CONTAINER_NAME = "dg2d-container";
 
 const DISTANCE_THRESHOLD = 5;
-const ATTRACTION_FORCE = 0.03;
-const REPULSION_FORCE = 0.05;
+const ATTRACTION_FORCE = 0.3;
+const REPULSION_FORCE = 0.5;
+const ALIGNMENT_FORCE = 0.5;
 
 const differentialGrowth = () => {
     const canvas = createCanvas(window.innerWidth, window.innerHeight, CONTAINER_NAME);
     paper.setup(canvas);
+    let doRender = true;
     
     new paper.PointText({
         point : new paper.Point(
-            paper.view.viewSize.width / 50,
-            paper.view.viewSize.height / 10,
+            paper.view.viewSize.width / 10,
+            paper.view.viewSize.height / 5,
         ),
         content : "Differential growth",
         justification : "left",
-        fontSize : 15
+        fontSize : 36
    })
 
     const centerVisualisation = new paper.Path.Circle(paper.view.center, 5);
@@ -35,11 +37,10 @@ const differentialGrowth = () => {
     console.log(`Path contains ${path.segments.length} segments`)
 
     paper.view.onFrame = (event : any) => {
+        if (!doRender) return
         path.segments.forEach((segment) => {
-            const neighbors = [segment.previous, segment.next];
-
             // attract
-            neighbors.forEach((neighbor) => {
+            [segment.previous, segment.next].forEach((neighbor) => {
                 const l = lerp(segment.point, neighbor.point, ATTRACTION_FORCE)
                 segment.point.x = l.x
                 segment.point.y = l.y
@@ -55,13 +56,23 @@ const differentialGrowth = () => {
                     segment.point.x += diff.x * REPULSION_FORCE
                     segment.point.y += diff.y * REPULSION_FORCE
                 }
-
             })
 
-            
+            // alignment         
+            const midpoint = lerp(segment.previous.point, segment.next.point, 0.5);
+            const l = lerp(segment.point, midpoint, ALIGNMENT_FORCE);
+            segment.point.x = l.x
+            segment.point.y = l.y
         })
     }
-
+    const pauseOnSpaceDown = () => {
+        document.addEventListener("keydown", (event: KeyboardEvent) => {
+            if ([" ", "Spacebar"].includes(event.key)) {
+                doRender = !doRender;
+            }
+        });
+    };
+    pauseOnSpaceDown()
 }
 
 export default differentialGrowth;
