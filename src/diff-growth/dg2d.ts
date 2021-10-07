@@ -5,19 +5,9 @@ import lerp from "../utils/lerp";
 
 const CONTAINER_NAME = "dg2d-container";
 
-const ATTRACTION_FORCE = 0.1;
-
-// }
-// const dx = pair[1].x - pair[0].x;
-//         const dy = pair[1].y - pair[0].y;
-//         for (let i = 0; i < nPointsPerSegment; i++){
-//             points.push(
-//                 new paper.Point(
-//                     pair[0].x + (i / nPointsPerSegment) * dx,
-//                     pair[0].y + (i / nPointsPerSegment) * dy,
-//                 )
-//             )
-//         }
+const DISTANCE_THRESHOLD = 5;
+const ATTRACTION_FORCE = 0.03;
+const REPULSION_FORCE = 0.05;
 
 const differentialGrowth = () => {
     const canvas = createCanvas(window.innerWidth, window.innerHeight, CONTAINER_NAME);
@@ -33,21 +23,11 @@ const differentialGrowth = () => {
         fontSize : 15
    })
 
-    
-    //    path.add(...pointsAsSquare(10, 10, new paper.Point(canvas.width / 2, canvas.height / 2)))
-
-    const center = new paper.Point(paper.view.viewSize.width / 2, paper.view.viewSize.height / 2);
-    const centerVisualisation = new paper.Path.Circle(center, 5);
+    const centerVisualisation = new paper.Path.Circle(paper.view.center, 5);
     centerVisualisation.strokeColor = new paper.Color("black");
-    centerVisualisation.fillColor = new paper.Color("pink");
+    centerVisualisation.fillColor = new paper.Color("green");
 
-    
-    const initialPoints = pointsAsSquare(100, 10, center)
-    // initialPoints
-    // .map((point) => {
-    //     const circle = new paper.Path.Circle(point, 5);
-    //     circle.strokeColor = new paper.Color("black");
-    // })
+    const initialPoints = pointsAsSquare(150, 100, paper.view.center)
 
     const path = new paper.Path({ strokeColor : 'black' });
     path.add(...initialPoints)
@@ -64,12 +44,24 @@ const differentialGrowth = () => {
                 segment.point.x = l.x
                 segment.point.y = l.y
             })
+            
+            // repulsion
+            path.segments
+            .filter(otherSegment => otherSegment != segment)
+            .forEach((otherSegment) => {
+                const d = segment.point.getDistance(otherSegment.point);
+                if (d < DISTANCE_THRESHOLD) {
+                    const diff = segment.point.subtract(otherSegment.point);
+                    segment.point.x += diff.x * REPULSION_FORCE
+                    segment.point.y += diff.y * REPULSION_FORCE
+                }
 
+            })
 
+            
         })
     }
 
 }
-
 
 export default differentialGrowth;
