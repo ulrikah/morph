@@ -38,7 +38,7 @@ module.exports = {
         new CleanWebpackPlugin({ cleanStaleWebpackAssets: false }),
         new HtmlWebpackPlugin({
             filename: 'index.html',
-            title: 'Morphogenesis in three dimensions',
+            title: 'Morphogenesis',
             meta: {
                 viewport: 'width=device-width, initial-scale=1, shrink-to-fit=no',
                 lang: 'en'

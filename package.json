@@ -20,6 +20,7 @@
   },
   "dependencies": {
     "camera-controls": "^1.22.1",
+    "paper": "^0.12.15",
     "three": "^0.131.3"
   },
   "devDependencies": {
