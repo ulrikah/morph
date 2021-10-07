@@ -9,9 +9,6 @@ const pointsAsSquare = (radius : number, nPointsPerSegment : number, center : pa
         center.clone().add(new paper.Point(-radius, radius)), // bottom left
         center.clone().add(new paper.Point(-radius, -radius)), // top left
     ];
-
-    console.log(squares)
-    
     const points : paper.Point[] = [];
     [
         [squares[0], squares[1]],

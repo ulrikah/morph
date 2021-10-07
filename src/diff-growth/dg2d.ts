@@ -9,6 +9,8 @@ const DISTANCE_THRESHOLD = 5;
 const ATTRACTION_FORCE = 0.3;
 const REPULSION_FORCE = 0.5;
 const ALIGNMENT_FORCE = 0.5;
+const ADAPTIVE_SUBDIVISION_THRESHOLD = 7;
+
 
 const differentialGrowth = () => {
     const canvas = createCanvas(window.innerWidth, window.innerHeight, CONTAINER_NAME);
@@ -45,7 +47,6 @@ const differentialGrowth = () => {
                 segment.point.x = l.x
                 segment.point.y = l.y
             })
-            
             // repulsion
             path.segments
             .filter(otherSegment => otherSegment != segment)
@@ -57,13 +58,23 @@ const differentialGrowth = () => {
                     segment.point.y += diff.y * REPULSION_FORCE
                 }
             })
-
             // alignment         
             const midpoint = lerp(segment.previous.point, segment.next.point, 0.5);
             const l = lerp(segment.point, midpoint, ALIGNMENT_FORCE);
             segment.point.x = l.x
             segment.point.y = l.y
         })
+        
+        // adaptive suddivision
+        const newSegments : [number, paper.Point][] = [];
+        path.segments.forEach((segment, idx) => {
+            if (segment.point.getDistance(segment.next.point) > ADAPTIVE_SUBDIVISION_THRESHOLD) {
+                const midpoint = lerp(segment.previous.point, segment.next.point, 0.5);
+                console.log("ADAPTIVE", midpoint.x.toFixed(0), midpoint.y.toFixed(0))
+                newSegments.push([idx + 1, midpoint])
+            }
+        })
+        newSegments.forEach(newSegment => path.insert(newSegment[0], newSegment[1]))
     }
     const pauseOnSpaceDown = () => {
         document.addEventListener("keydown", (event: KeyboardEvent) => {
