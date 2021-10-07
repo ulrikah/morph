@@ -36,10 +36,6 @@ const differentialGrowth = () => {
         fontSize : 24
     })
 
-    // const centerVisualisation = new paper.Path.Circle(paper.view.center, 5);
-    // centerVisualisation.strokeColor = new paper.Color("black");
-    // centerVisualisation.fillColor = new paper.Color("green");
-
     const initialPoints = pointsAsSquare(50, 50, paper.view.center)
     const path = new paper.Path({ strokeColor : 'black' });
     path.add(...initialPoints)
@@ -99,14 +95,21 @@ const differentialGrowth = () => {
         }
         debugText.content = `nodes: ${path.segments.length.toString()}`
     }
-    const pauseOnSpaceDown = () => {
+    const initEventListeners = () => {
         document.addEventListener("keydown", (event: KeyboardEvent) => {
             if ([" ", "Spacebar"].includes(event.key)) {
                 doRender = !doRender;
             }
+            if (["s"].includes(event.key)) {
+                doRender = !doRender;
+                const svg = paper.project.exportSVG({ bounds : "view" });
+                debugger;
+            }
         });
+
+
     };
-    pauseOnSpaceDown()
+    initEventListeners()
 }
 
 export default differentialGrowth;
