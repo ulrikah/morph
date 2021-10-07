@@ -87,7 +87,7 @@ const differentialGrowth = () => {
         })
         newPoints.forEach(newSegment => path.insert(newSegment.index, newSegment.point))
         
-        if (event.count % OVERCONSTRAIN_FREQUENCY == 1 && path.segments.length < 300) {
+        if (event.count % OVERCONSTRAIN_FREQUENCY == 1) {
             const randomIndex = randomInt(0, path.segments.length - 1)
             const randomNode = path.segments[randomIndex];
             const newNode = lerp(randomNode.point, randomNode.next.point, random(0.0, 1.0))
