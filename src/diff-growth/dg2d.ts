@@ -2,41 +2,48 @@ import paper from "paper";
 import createCanvas from "../utils/createCanvas";
 import pointsAsSquare from "../utils/shapes";
 import lerp from "../utils/lerp";
+import { random, randomInt } from "../utils/random";
 
 const CONTAINER_NAME = "dg2d-container";
 
-const DISTANCE_THRESHOLD = 5;
-const ATTRACTION_FORCE = 0.3;
+const DISTANCE_THRESHOLD = 3;
+const ATTRACTION_FORCE = 0.9;
 const REPULSION_FORCE = 0.5;
 const ALIGNMENT_FORCE = 0.5;
-const ADAPTIVE_SUBDIVISION_THRESHOLD = 7;
-
+const ADAPTIVE_SUBDIVISION_THRESHOLD = DISTANCE_THRESHOLD * 2;
+const OVERCONSTRAIN_FREQUENCY = 2; // provided in frames
 
 const differentialGrowth = () => {
     const canvas = createCanvas(window.innerWidth, window.innerHeight, CONTAINER_NAME);
     paper.setup(canvas);
     let doRender = true;
-    
-    new paper.PointText({
+
+    const text = new paper.PointText({
         point : new paper.Point(
             paper.view.viewSize.width / 10,
             paper.view.viewSize.height / 5,
         ),
-        content : "Differential growth",
+        content : `Differential growth`,
         justification : "left",
         fontSize : 36
-   })
+    })
+    const debugText = new paper.PointText({
+        point : new paper.Point(
+            paper.view.viewSize.width / 10,
+            paper.view.viewSize.height / 5 + 50,
+        ),
+        justification : "left",
+        fontSize : 24
+    })
 
-    const centerVisualisation = new paper.Path.Circle(paper.view.center, 5);
-    centerVisualisation.strokeColor = new paper.Color("black");
-    centerVisualisation.fillColor = new paper.Color("green");
+    // const centerVisualisation = new paper.Path.Circle(paper.view.center, 5);
+    // centerVisualisation.strokeColor = new paper.Color("black");
+    // centerVisualisation.fillColor = new paper.Color("green");
 
-    const initialPoints = pointsAsSquare(150, 100, paper.view.center)
-
+    const initialPoints = pointsAsSquare(50, 50, paper.view.center)
     const path = new paper.Path({ strokeColor : 'black' });
     path.add(...initialPoints)
     path.closePath()
-    console.log(`Path contains ${path.segments.length} segments`)
 
     paper.view.onFrame = (event : any) => {
         if (!doRender) return
@@ -66,15 +73,31 @@ const differentialGrowth = () => {
         })
         
         // adaptive suddivision
-        const newSegments : [number, paper.Point][] = [];
-        path.segments.forEach((segment, idx) => {
-            if (segment.point.getDistance(segment.next.point) > ADAPTIVE_SUBDIVISION_THRESHOLD) {
-                const midpoint = lerp(segment.previous.point, segment.next.point, 0.5);
-                console.log("ADAPTIVE", midpoint.x.toFixed(0), midpoint.y.toFixed(0))
-                newSegments.push([idx + 1, midpoint])
+        const newPoints : { index : number, point : paper.Point }[] = [];
+        path.curves.forEach((curve, idx) => {
+            if (
+                curve.point1.getDistance(curve.point2) > ADAPTIVE_SUBDIVISION_THRESHOLD
+                && newPoints.every(newPoint => 
+                    newPoint.point.getDistance(curve.point1) < ADAPTIVE_SUBDIVISION_THRESHOLD 
+                    && newPoint.point.getDistance(curve.point2) < ADAPTIVE_SUBDIVISION_THRESHOLD
+                )
+            ) {
+                const newSegment = curve.getPointAtTime(0.5)
+                newPoints.push({ 
+                    index: idx + 1, 
+                    point: newSegment
+                })
             }
         })
-        newSegments.forEach(newSegment => path.insert(newSegment[0], newSegment[1]))
+        newPoints.forEach(newSegment => path.insert(newSegment.index, newSegment.point))
+        
+        if (event.count % OVERCONSTRAIN_FREQUENCY == 1 && path.segments.length < 300) {
+            const randomIndex = randomInt(0, path.segments.length - 1)
+            const randomNode = path.segments[randomIndex];
+            const newNode = lerp(randomNode.point, randomNode.next.point, random(0.0, 1.0))
+            path.insert(randomIndex, newNode);
+        }
+        debugText.content = `nodes: ${path.segments.length.toString()}`
     }
     const pauseOnSpaceDown = () => {
         document.addEventListener("keydown", (event: KeyboardEvent) => {
