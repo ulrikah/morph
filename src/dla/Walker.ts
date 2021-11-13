@@ -20,7 +20,6 @@ const walkerActiveMaterial = new MeshToonMaterial({ color: 0xce214a });
 const walkerInactiveMaterial = new MeshToonMaterial({ color: 0x2194ce });
 
 class Walker {
-    position: Vector3;
     speed: number;
     body: Mesh<SphereGeometry, Material>;
     active: boolean;
