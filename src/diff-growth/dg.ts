@@ -77,7 +77,7 @@ class Chain {
         this.material = new THREE.MeshToonMaterial({ color: 0xce214a });
         const scale = 5;
         for (let i = 0; i < nNodes; i++) {
-            const deg = i * 180.0 / Math.PI
+            const deg = (i * 180.0) / Math.PI;
             const x = Math.sin(deg) * scale;
             const z = random(-10, 10);
             const y = Math.cos(deg) * scale;
@@ -107,7 +107,7 @@ class Chain {
     };
 
     adaptiveSubdivision = (threshold: number) => {
-        const originalNodes : Node[] = [...this.nodes];
+        const originalNodes: Node[] = [...this.nodes];
         const newNodes: Node[] = [];
 
         originalNodes.forEach((node) => {
@@ -122,9 +122,9 @@ class Chain {
                     const a = node.body.position.clone();
                     const b = neighborNode.body.position.clone();
                     const midPoint = a.add(b).divideScalar(2);
-                    const newNode = this.createNode(midPoint) 
+                    const newNode = this.createNode(midPoint);
                     newNodes.push(newNode);
-                    this.nodes.splice(idx, 0, newNode)
+                    this.nodes.splice(idx, 0, newNode);
                 }
             });
         });
@@ -140,10 +140,10 @@ class Chain {
         });
         // add new nodes if distance between two neighbors is too large
         const newNodes: Node[] = [];
-	    
-        // adaptive subdivision 
+
+        // adaptive subdivision
         newNodes.push(...this.adaptiveSubdivision(10));
-        
+
         // TODO:
         // insert new nodes in the chain to over-constrain the system and induce growth
         // newNodes.push(...this.overConstrain());
