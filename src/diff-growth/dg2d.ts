@@ -3,6 +3,7 @@ import createCanvas from "../utils/createCanvas";
 import pointsAsSquare from "../utils/shapes";
 import lerp from "../utils/lerp";
 import { random, randomInt } from "../utils/random";
+import { fileUploader, svgElementFromString } from "../io";
 
 const CONTAINER_NAME = "dg2d-container";
 
@@ -21,6 +22,7 @@ const differentialGrowth = () => {
     );
     paper.setup(canvas);
     let doRender = true;
+    let isReady = false;
 
     const text = new paper.PointText({
         point: new paper.Point(
@@ -40,13 +42,36 @@ const differentialGrowth = () => {
         fontSize: 24,
     });
 
-    const initialPoints = pointsAsSquare(50, 50, paper.view.center);
     const path = new paper.Path({ strokeColor: "black" });
-    path.add(...initialPoints);
-    path.closePath();
+
+    const addSvgFilesToPath = (files: File[]) => {
+        files.forEach((file: File) => {
+            if (file.type.match("svg")) {
+                console.log("Trying file", file.name);
+                file.text().then((content) => {
+                    paper.project.importSVG(content, {
+                        insert: false,
+                        onLoad: (item: paper.Item) => {
+                            // the second child of the SVG items are paths
+                            path.add(
+                                ...(
+                                    item.children[1] as paper.Path
+                                ).segments.map((segment) => segment.point)
+                            );
+                            path.closePath();
+                            console.log(`Updating ${paper.view.update()}`);
+                            isReady = true;
+                        },
+                    });
+                });
+            }
+        });
+    };
+
+    canvas.parentElement?.prepend(fileUploader(addSvgFilesToPath));
 
     paper.view.onFrame = (event: any) => {
-        if (!doRender) return;
+        if (!doRender || !isReady) return;
         path.segments.forEach((segment) => {
             // attract
             [segment.previous, segment.next].forEach((neighbor) => {
@@ -121,6 +146,7 @@ const differentialGrowth = () => {
             if (["s"].includes(event.key)) {
                 doRender = !doRender;
                 const svg = paper.project.exportSVG({ bounds: "view" });
+                // TODO: turn SVG into downloadable blob from io.ts module
                 debugger;
             }
         });
