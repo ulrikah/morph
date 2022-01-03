@@ -3,7 +3,7 @@ import createCanvas from "../utils/createCanvas";
 import pointsAsSquare from "../utils/shapes";
 import lerp from "../utils/lerp";
 import { random, randomInt } from "../utils/random";
-import { fileUploader, svgElementFromString } from "../io";
+import { fileUploader, getDownloadableLink } from "../io";
 
 const CONTAINER_NAME = "dg2d-container";
 
@@ -144,10 +144,26 @@ const differentialGrowth = () => {
                 doRender = !doRender;
             }
             if (["s"].includes(event.key)) {
-                doRender = !doRender;
-                const svg = paper.project.exportSVG({ bounds: "view" });
-                // TODO: turn SVG into downloadable blob from io.ts module
                 debugger;
+                const svgElement = paper.project.exportSVG({
+                    bounds: "view",
+                }) as SVGElement;
+                // TODO: turn SVG into downloadable blob from io.ts module
+                svgElement.setAttribute("xmlns", "http://www.w3.org/2000/svg");
+                svgElement.setAttribute(
+                    "xmlns:xlink",
+                    "http://www.w3.org/1999/xlink"
+                );
+                const svgFile = new File(
+                    [svgElement.outerHTML],
+                    `export_${Date.now()}.svg`,
+                    {
+                        type: "image/svg+xml;charset=utf-8",
+                    }
+                );
+
+                const linkElement = getDownloadableLink(svgFile);
+                document.body.appendChild(linkElement);
             }
         });
     };

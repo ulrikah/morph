@@ -7,10 +7,12 @@ export const svgElementFromString = (svgString: string): SVGElement => {
     return temp.content.firstChild as SVGElement;
 };
 
-export const getDownloadableLink = (uri: string): HTMLAnchorElement => {
+export const getDownloadableLink = (file: File): HTMLAnchorElement => {
+    const fileURL = URL.createObjectURL(file);
     const link = document.createElement("a");
-    link.setAttribute("href", uri);
-    link.setAttribute("download", uri);
+    link.setAttribute("href", fileURL);
+    link.setAttribute("download", file.name);
+    link.innerText = file.name;
     return link;
 };
 
