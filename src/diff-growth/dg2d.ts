@@ -1,11 +1,7 @@
 import paper from "paper";
-import createCanvas from "../utils/createCanvas";
-import pointsAsSquare from "../utils/shapes";
 import lerp from "../utils/lerp";
 import { random, randomInt } from "../utils/random";
 import { fileFromSvgElement, fileUploader, getDownloadableLink } from "../io";
-
-const CONTAINER_NAME = "dg2d-container";
 
 const DISTANCE_THRESHOLD = 3;
 const ATTRACTION_FORCE = 0.9;
@@ -13,26 +9,13 @@ const REPULSION_FORCE = 0.5;
 const ALIGNMENT_FORCE = 0.5;
 const ADAPTIVE_SUBDIVISION_THRESHOLD = DISTANCE_THRESHOLD * 2;
 const OVERCONSTRAIN_FREQUENCY = 2; // provided in frames
+const DEBUG = false;
 
-const differentialGrowth = () => {
-    const canvas = createCanvas(
-        window.innerWidth,
-        window.innerHeight,
-        CONTAINER_NAME
-    );
+const differentialGrowth = (canvas: HTMLCanvasElement) => {
     paper.setup(canvas);
     let doRender = true;
     let isReady = false;
 
-    const text = new paper.PointText({
-        point: new paper.Point(
-            paper.view.viewSize.width / 10,
-            paper.view.viewSize.height / 5
-        ),
-        content: `Differential growth`,
-        justification: "left",
-        fontSize: 36,
-    });
     const debugText = new paper.PointText({
         point: new paper.Point(
             paper.view.viewSize.width / 10,
@@ -40,6 +23,7 @@ const differentialGrowth = () => {
         ),
         justification: "left",
         fontSize: 24,
+        visible: DEBUG,
     });
 
     const path = new paper.Path({ strokeColor: "black" });
@@ -69,7 +53,8 @@ const differentialGrowth = () => {
         });
     };
 
-    canvas.parentElement?.prepend(fileUploader(addSvgFilesToPath));
+    const uploaderElement = fileUploader(addSvgFilesToPath);
+    canvas.parentElement?.append(uploaderElement);
 
     paper.view.onFrame = (event: any) => {
         if (!doRender || !isReady) return;
@@ -137,7 +122,8 @@ const differentialGrowth = () => {
             );
             path.insert(randomIndex, newNode);
         }
-        debugText.content = `nodes: ${path.segments.length.toString()}`;
+        if (debugText)
+            debugText.content = `nodes: ${path.segments.length.toString()}`;
     };
     const initEventListeners = () => {
         document.addEventListener("keydown", (event: KeyboardEvent) => {
@@ -151,7 +137,9 @@ const differentialGrowth = () => {
                     }) as SVGElement
                 );
                 const linkElement = getDownloadableLink(svgFile);
-                document.body.appendChild(linkElement);
+                canvas.parentElement
+                    ? canvas.parentElement.appendChild(linkElement)
+                    : document.body.appendChild(linkElement);
             }
         });
     };
