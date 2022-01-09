@@ -1,11 +1,8 @@
 import paper from "paper";
-import createCanvas from "../utils/createCanvas";
-import pointsAsSquare from "../utils/shapes";
 import lerp from "../utils/lerp";
 import { random, randomInt } from "../utils/random";
-import { fileUploader, getDownloadableLink } from "../io";
-
-const CONTAINER_NAME = "dg2d-container";
+import { fileFromSvgElement, fileUploader, getDownloadableLink } from "../io";
+import pointsAsSquare from "../utils/shapes";
 
 const DISTANCE_THRESHOLD = 3;
 const ATTRACTION_FORCE = 0.9;
@@ -13,26 +10,13 @@ const REPULSION_FORCE = 0.5;
 const ALIGNMENT_FORCE = 0.5;
 const ADAPTIVE_SUBDIVISION_THRESHOLD = DISTANCE_THRESHOLD * 2;
 const OVERCONSTRAIN_FREQUENCY = 2; // provided in frames
+const DEBUG = false;
 
-const differentialGrowth = () => {
-    const canvas = createCanvas(
-        window.innerWidth,
-        window.innerHeight,
-        CONTAINER_NAME
-    );
+const differentialGrowth = (canvas: HTMLCanvasElement) => {
     paper.setup(canvas);
     let doRender = true;
     let isReady = false;
 
-    const text = new paper.PointText({
-        point: new paper.Point(
-            paper.view.viewSize.width / 10,
-            paper.view.viewSize.height / 5
-        ),
-        content: `Differential growth`,
-        justification: "left",
-        fontSize: 36,
-    });
     const debugText = new paper.PointText({
         point: new paper.Point(
             paper.view.viewSize.width / 10,
@@ -40,9 +24,13 @@ const differentialGrowth = () => {
         ),
         justification: "left",
         fontSize: 24,
+        visible: DEBUG,
     });
 
     const path = new paper.Path({ strokeColor: "black" });
+    path.add(...pointsAsSquare(50, 50, paper.view.center));
+    path.closePath();
+    isReady = true;
 
     const addSvgFilesToPath = (files: File[]) => {
         files.forEach((file: File) => {
@@ -52,6 +40,7 @@ const differentialGrowth = () => {
                     paper.project.importSVG(content, {
                         insert: false,
                         onLoad: (item: paper.Item) => {
+                            path.removeSegments();
                             // the second child of the SVG items are paths
                             path.add(
                                 ...(
@@ -59,6 +48,7 @@ const differentialGrowth = () => {
                                 ).segments.map((segment) => segment.point)
                             );
                             path.closePath();
+                            path.position = paper.project.view.center;
                             console.log(`Updating ${paper.view.update()}`);
                             isReady = true;
                         },
@@ -68,7 +58,23 @@ const differentialGrowth = () => {
         });
     };
 
-    canvas.parentElement?.prepend(fileUploader(addSvgFilesToPath));
+    const helpText = document.createElement("p");
+    helpText.setAttribute("style", "font-family: Arial");
+    helpText.innerText =
+        "Upload a custom SVG file. The SVG has to be a closed shape with a single path.";
+    const uploaderElement = fileUploader(addSvgFilesToPath);
+    const fileUploadContainer = document.createElement("div");
+    fileUploadContainer.setAttribute(
+        "style",
+        `
+        border: 1px solid black; max-width: 75%;
+        border-radius: 5px;
+        padding: 2% 1% 1% 1%;
+        `
+    );
+    fileUploadContainer.appendChild(uploaderElement);
+    fileUploadContainer.appendChild(helpText);
+    canvas.parentElement?.append(fileUploadContainer);
 
     paper.view.onFrame = (event: any) => {
         if (!doRender || !isReady) return;
@@ -136,7 +142,8 @@ const differentialGrowth = () => {
             );
             path.insert(randomIndex, newNode);
         }
-        debugText.content = `nodes: ${path.segments.length.toString()}`;
+        if (debugText)
+            debugText.content = `nodes: ${path.segments.length.toString()}`;
     };
     const initEventListeners = () => {
         document.addEventListener("keydown", (event: KeyboardEvent) => {
@@ -144,26 +151,15 @@ const differentialGrowth = () => {
                 doRender = !doRender;
             }
             if (["s"].includes(event.key)) {
-                debugger;
-                const svgElement = paper.project.exportSVG({
-                    bounds: "view",
-                }) as SVGElement;
-                // TODO: turn SVG into downloadable blob from io.ts module
-                svgElement.setAttribute("xmlns", "http://www.w3.org/2000/svg");
-                svgElement.setAttribute(
-                    "xmlns:xlink",
-                    "http://www.w3.org/1999/xlink"
+                const svgFile = fileFromSvgElement(
+                    path.exportSVG({
+                        bounds: "view",
+                    }) as SVGElement
                 );
-                const svgFile = new File(
-                    [svgElement.outerHTML],
-                    `export_${Date.now()}.svg`,
-                    {
-                        type: "image/svg+xml;charset=utf-8",
-                    }
-                );
-
                 const linkElement = getDownloadableLink(svgFile);
-                document.body.appendChild(linkElement);
+                canvas.parentElement
+                    ? canvas.parentElement.appendChild(linkElement)
+                    : document.body.appendChild(linkElement);
             }
         });
     };
