@@ -1,10 +1,24 @@
 import paper from "paper";
-import createCanvas from "./utils/createCanvas";
 
 export const svgElementFromString = (svgString: string): SVGElement => {
     let temp = document.createElement("template");
     temp.innerHTML = svgString.trim();
     return temp.content.firstChild as SVGElement;
+};
+
+export const fileFromSvgElement = (
+    svgElement: SVGElement,
+    fileName?: string
+): File => {
+    svgElement.setAttribute("xmlns", "http://www.w3.org/2000/svg");
+    svgElement.setAttribute("xmlns:xlink", "http://www.w3.org/1999/xlink");
+    return new File(
+        [svgElement.outerHTML],
+        fileName ? fileName : `export_${Date.now()}.svg`,
+        {
+            type: "image/svg+xml;charset=utf-8",
+        }
+    );
 };
 
 export const getDownloadableLink = (file: File): HTMLAnchorElement => {
