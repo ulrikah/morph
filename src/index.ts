@@ -12,7 +12,7 @@ const main = () => {
         "style",
         "font-family: Arial; font-size: 18pt; font-weight: bold"
     );
-    const canvas = createCanvas(window.innerWidth, window.innerHeight * 0.8);
+    const canvas = createCanvas(window.innerWidth, window.innerHeight * 0.7);
     canvas.setAttribute("style", "display: block;");
 
     root.appendChild(info);

@@ -58,8 +58,23 @@ const differentialGrowth = (canvas: HTMLCanvasElement) => {
         });
     };
 
+    const helpText = document.createElement("p");
+    helpText.setAttribute("style", "font-family: Arial");
+    helpText.innerText =
+        "Upload a custom SVG file. The SVG has to be a closed shape with a single path.";
     const uploaderElement = fileUploader(addSvgFilesToPath);
-    canvas.parentElement?.append(uploaderElement);
+    const fileUploadContainer = document.createElement("div");
+    fileUploadContainer.setAttribute(
+        "style",
+        `
+        border: 1px solid black; max-width: 75%;
+        border-radius: 5px;
+        padding: 2% 1% 1% 1%;
+        `
+    );
+    fileUploadContainer.appendChild(uploaderElement);
+    fileUploadContainer.appendChild(helpText);
+    canvas.parentElement?.append(fileUploadContainer);
 
     paper.view.onFrame = (event: any) => {
         if (!doRender || !isReady) return;
