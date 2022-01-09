@@ -146,7 +146,7 @@ const differentialGrowth = () => {
             }
             if (["s"].includes(event.key)) {
                 debugger;
-                const svgElement = paper.project.exportSVG({
+                const svgElement = path.exportSVG({
                     bounds: "view",
                 }) as SVGElement;
                 // TODO: turn SVG into downloadable blob from io.ts module
