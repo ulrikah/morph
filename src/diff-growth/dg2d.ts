@@ -2,6 +2,7 @@ import paper from "paper";
 import lerp from "../utils/lerp";
 import { random, randomInt } from "../utils/random";
 import { fileFromSvgElement, fileUploader, getDownloadableLink } from "../io";
+import pointsAsSquare from "../utils/shapes";
 
 const DISTANCE_THRESHOLD = 3;
 const ATTRACTION_FORCE = 0.9;
@@ -27,6 +28,9 @@ const differentialGrowth = (canvas: HTMLCanvasElement) => {
     });
 
     const path = new paper.Path({ strokeColor: "black" });
+    path.add(...pointsAsSquare(50, 50, paper.view.center));
+    path.closePath();
+    isReady = true;
 
     const addSvgFilesToPath = (files: File[]) => {
         files.forEach((file: File) => {
@@ -36,6 +40,7 @@ const differentialGrowth = (canvas: HTMLCanvasElement) => {
                     paper.project.importSVG(content, {
                         insert: false,
                         onLoad: (item: paper.Item) => {
+                            path.removeSegments();
                             // the second child of the SVG items are paths
                             path.add(
                                 ...(
