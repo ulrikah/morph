@@ -59,6 +59,7 @@ const differentialGrowth = () => {
                                 ).segments.map((segment) => segment.point)
                             );
                             path.closePath();
+                            path.position = paper.project.view.center;
                             console.log(`Updating ${paper.view.update()}`);
                             isReady = true;
                         },
