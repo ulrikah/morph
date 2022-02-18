@@ -8,8 +8,12 @@ CameraControls.install({ THREE: THREE });
 
 const N_WALKERS = 1000;
 
-const main = () => {
-    const canvas = createCanvas(window.innerWidth, window.innerHeight);
+export const main = (
+    canvas: HTMLCanvasElement = createCanvas(
+        window.innerWidth,
+        window.innerHeight
+    )
+) => {
     const renderer = new THREE.WebGLRenderer({ canvas });
 
     const fov = 75;
@@ -78,5 +82,3 @@ const main = () => {
     pauseOnSpaceDown();
     requestAnimationFrame(render);
 };
-
-export default main;
