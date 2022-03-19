@@ -43,9 +43,7 @@ const differentialGrowth = (canvas: HTMLCanvasElement) => {
                             path.removeSegments();
                             // the second child of the SVG items are paths
                             path.add(
-                                ...(
-                                    item.children[1] as paper.Path
-                                ).segments.map((segment) => segment.point)
+                                ...upsamplePath(item.children[1] as paper.Path, 500)
                             );
                             path.closePath();
                             path.position = paper.project.view.center;
@@ -165,5 +163,11 @@ const differentialGrowth = (canvas: HTMLCanvasElement) => {
     };
     initEventListeners();
 };
+
+const range = (n : number) => [...Array(n).keys()]
+
+const upsamplePath = (path: paper.Path, nSamples : number) : paper.Point[] => 
+    range(nSamples)
+        .map(i => path.getPointAt((path.length / nSamples) * i))
 
 export default differentialGrowth;
