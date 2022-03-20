@@ -143,6 +143,11 @@ const differentialGrowth = (canvas: HTMLCanvasElement) => {
             debugText.content = `nodes: ${path.segments.length.toString()}`;
     };
     const initEventListeners = () => {
+        const downloadAbleLinksContainer = document.createElement("div")
+        canvas.parentElement
+            ? canvas.parentElement.appendChild(downloadAbleLinksContainer)
+            : document.body.appendChild(downloadAbleLinksContainer);
+
         document.addEventListener("keydown", (event: KeyboardEvent) => {
             if ([" ", "Spacebar"].includes(event.key)) {
                 doRender = !doRender;
@@ -154,9 +159,8 @@ const differentialGrowth = (canvas: HTMLCanvasElement) => {
                     }) as SVGElement
                 );
                 const linkElement = getDownloadableLink(svgFile);
-                canvas.parentElement
-                    ? canvas.parentElement.appendChild(linkElement)
-                    : document.body.appendChild(linkElement);
+                linkElement.setAttribute("style", "display: block;")
+                downloadAbleLinksContainer.appendChild(linkElement)
             }
         });
     };
