@@ -17,7 +17,7 @@ const main = (algorithm: Algorithms) => {
         info.innerText = "Differential growth";
         info.setAttribute(
             "style",
-            "font-family: Arial; font-size: 18pt; font-weight: bold"
+            "font-size: 18pt; font-weight: bold"
         );
         const canvas = createCanvas(
             window.innerWidth,
